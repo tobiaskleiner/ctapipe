@@ -86,8 +86,8 @@ def test_stage_1():
             assert tf.root.dl1.event.subarray
             assert tf.root.configuration.instrument.subarray.layout
             assert tf.root.configuration.instrument.telescope.optics
-            assert tf.root.configuration.instrument.telescope.camera.geometry_LSTCam
-            assert tf.root.configuration.instrument.telescope.camera.readout_LSTCam
+            assert tf.root.configuration.instrument.telescope.camera.geometry_0
+            assert tf.root.configuration.instrument.telescope.camera.readout_0
             assert tf.root.dl1.event.telescope.images.tel_001
             dl1_image = tf.root.dl1.event.telescope.images.tel_001
             assert "image_mask" in dl1_image.dtype.names

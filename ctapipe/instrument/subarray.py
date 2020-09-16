@@ -12,6 +12,7 @@ from astropy import units as u
 from astropy.coordinates import SkyCoord
 from astropy.table import Table
 from astropy.utils import lazyproperty
+import warnings
 import tables
 
 import ctapipe
@@ -245,6 +246,13 @@ class SubarrayDescription:
                 "equivalent_focal_length": focal_length,
             }
             tab = Table(cols)
+
+            if len(tab["description"]) != len(set(tab["description"])):
+                warnings.warn(
+                    "Array contains different telescope descriptions with the same string"
+                    "representation"
+                    "reading back this array will not be correct"
+                )
 
         else:
             raise ValueError(f"Table type '{kind}' not known")

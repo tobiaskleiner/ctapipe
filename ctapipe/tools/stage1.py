@@ -43,19 +43,11 @@ from ..image import (
     morphology_parameters,
 )
 from ..image.extractor import ImageExtractor
-from ..io import EventSource, HDF5TableWriter, SimTelEventSource
+from ..io import EventSource, HDF5TableWriter, SimTelEventSource, DL1_DATA_MODEL_VERSION
 
 tables.parameters.NODE_CACHE_SLOTS = 3000  # fixes problem with too many datasets
 
 PROV = Provenance()
-
-# define the version of the DL1 data model written here. This should be updated
-# when necessary:
-# - increase the major number if there is a breaking change to the model
-#   (meaning readers need to update scripts)
-# - increase the minor number if new columns or datasets are added
-# - increase the patch number if there is a small bugfix to the model.
-DL1_DATA_MODEL_VERSION = "v1.0.0"
 
 
 def write_reference_metadata_headers(obs_id, subarray, writer):

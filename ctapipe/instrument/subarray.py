@@ -451,9 +451,8 @@ class SubarrayDescription:
             ]
             if len(descriptions) != len(set(descriptions)):
                 warnings.warn(
-                    "Array contains different telescope descriptions with the same string"
-                    "representation"
-                    "reading back this array will not be correct"
+                    "Array contains different telescopes with the same description string"
+                    "representation, optics descriptions will be incorrect for some of the telescopes"
                 )
 
         optics = [

@@ -20,3 +20,11 @@ __all__ = [
     "SimTelEventSource",
     "DataLevel",
 ]
+
+# define the version of the DL1 data model written here. This should be updated
+# when necessary:
+# - increase the major number if there is a breaking change to the model
+#   (meaning readers need to update scripts)
+# - increase the minor number if new columns or datasets are added
+# - increase the patch number if there is a small bugfix to the model.
+DL1_DATA_MODEL_VERSION = "v2.0.0"

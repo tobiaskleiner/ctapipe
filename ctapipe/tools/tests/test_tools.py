@@ -51,7 +51,6 @@ def test_stage_1():
             cameras = tf.root.configuration.instrument.telescope.camera
             assert cameras.geometry_0
             assert cameras.readout_0
-            assert cameras.readout_0._v_attrs["CAM_ID"] == "LSTCam"
 
         # check we can read telescope parametrs
         dl1_features = pd.read_hdf(f.name, "/dl1/event/telescope/parameters/tel_001")

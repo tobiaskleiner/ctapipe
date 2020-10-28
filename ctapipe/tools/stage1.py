@@ -91,9 +91,8 @@ def write_reference_metadata_headers(obs_id, subarray, writer):
         ),
     )
 
-    # convert all values to strings, since hdf5 can't handle Times, etc.:
     # TODO: add activity_stop_time?
-    headers = {k: str(v) for k, v in reference.to_dict().items()}
+    headers = reference.to_dict()
     meta.write_to_hdf5(headers, writer._h5file)
 
 
@@ -150,12 +149,6 @@ class Stage1ProcessorTool(Tool):
         default_value="blosc:zstd",
     ).tag(config=True)
 
-    image_extractor_type = create_class_enum_trait(
-        base_class=ImageExtractor,
-        default_value="NeighborPeakWindowSum",
-        help="Method to use to turn a waveform into a single charge value",
-    ).tag(config=True)
-
     image_cleaner_type = create_class_enum_trait(
         base_class=ImageCleaner, default_value="TailcutsImageCleaner"
     )
@@ -178,7 +171,6 @@ class Stage1ProcessorTool(Tool):
         "output": "Stage1ProcessorTool.output_path",
         "allowed-tels": "EventSource.allowed_tels",
         "max-events": "EventSource.max_events",
-        "image-extractor-type": "Stage1ProcessorTool.image_extractor_type",
         "image-cleaner-type": "Stage1ProcessorTool.image_cleaner_type",
     }
 
@@ -237,7 +229,7 @@ class Stage1ProcessorTool(Tool):
             )
 
         # setup components:
-        self.event_source = self.add_component(EventSource.from_config(parent=self))
+        self.event_source = EventSource.from_config(parent=self)
 
         datalevels = self.event_source.datalevels
         if DataLevel.R1 not in datalevels and DataLevel.DL0 not in datalevels:
@@ -247,28 +239,11 @@ class Stage1ProcessorTool(Tool):
             )
             sys.exit(1)
 
-        self.image_extractor = self.add_component(
-            ImageExtractor.from_name(
-                self.image_extractor_type,
-                parent=self,
-                subarray=self.event_source.subarray,
-            )
+        self.calibrate = CameraCalibrator(parent=self, subarray=self.event_source.subarray)
+        self.clean = ImageCleaner.from_name(
+            self.image_cleaner_type, parent=self, subarray=self.event_source.subarray
         )
-        self.calibrate = self.add_component(
-            CameraCalibrator(
-                parent=self,
-                subarray=self.event_source.subarray,
-                image_extractor=self.image_extractor,
-            )
-        )
-        self.clean = self.add_component(
-            ImageCleaner.from_name(
-                self.image_cleaner_type,
-                parent=self,
-                subarray=self.event_source.subarray,
-            )
-        )
-        self.check_image = self.add_component(ImageQualityQuery(parent=self))
+        self.check_image = ImageQualityQuery(parent=self)
 
         # warn if max_events prevents writing the histograms
         if (
@@ -494,7 +469,7 @@ class Stage1ProcessorTool(Tool):
     def _write_telescope_event(self, writer, event):
         """
         add entries to the event/telescope tables for each telescope in a single
-        event
+        even
         """
         # write the telescope tables
         for tel_id, dl1_camera in event.dl1.tel.items():
@@ -522,6 +497,7 @@ class Stage1ProcessorTool(Tool):
                 f"tel_{tel_id:03d}" if self.split_datasets_by == "tel_id" else tel_type
             )
 
+            event.trigger.tel[tel_id].prefix = ""
             writer.write(
                 "dl1/event/telescope/trigger", [tel_index, event.trigger.tel[tel_id]]
             )
@@ -623,6 +599,8 @@ class Stage1ProcessorTool(Tool):
         writer.exclude("dl1/event/subarray/trigger", "tel")
         writer.exclude("dl1/monitoring/subarray/pointing", "tel")
         writer.exclude("dl1/monitoring/subarray/pointing", "event_type")
+        writer.exclude("dl1/monitoring/subarray/pointing", "tels_with_trigger")
+        writer.exclude("/dl1/event/telescope/trigger", "trigger_pixels")
         for tel_id, telescope in self.event_source.subarray.tel.items():
             tel_type = str(telescope)
             if self.split_datasets_by == "tel_id":
@@ -634,6 +612,11 @@ class Stage1ProcessorTool(Tool):
                 writer.exclude(
                     f"/dl1/event/telescope/images/{table_name}", "image_mask"
                 )
+
+            writer.exclude(
+                f"/dl1/monitoring/telescope/pointing/{table_name}",
+                "telescopetrigger_trigger_pixels",
+            )
             writer.exclude(f"/dl1/event/telescope/images/{table_name}", "parameters")
             writer.exclude(
                 f"/dl1/monitoring/event/pointing/tel_{tel_id:03d}", "event_type"

@@ -14,10 +14,11 @@ from astropy.table import QTable, Table
 from astropy.utils import lazyproperty
 import warnings
 import tables
+from copy import copy
 
 import ctapipe
 
-from ..coordinates import GroundFrame
+from ..coordinates import GroundFrame, CameraFrame
 from .telescope import TelescopeDescription
 from .camera import CameraDescription, CameraReadout, CameraGeometry
 from .optics import OpticsDescription
@@ -230,6 +231,7 @@ class SubarrayDescription:
                     tel_description=descs,
                 )
             )
+            tab.meta["TAB_VER"] = "1.0"
 
         elif kind == "optics":
             unique_types = self.telescope_types
@@ -252,6 +254,7 @@ class SubarrayDescription:
                 "equivalent_focal_length": focal_length,
             }
             tab = Table(cols)
+            tab.meta["TAB_VER"] = "2.0"
         else:
             raise ValueError(f"Table type '{kind}' not known")
 
@@ -368,7 +371,7 @@ class SubarrayDescription:
                 return False
         return True
 
-    def to_hdf(self, output_path):
+    def to_hdf(self, output_path, overwrite=False):
         """write the SubarrayDescription
 
         Parameters
@@ -386,12 +389,14 @@ class SubarrayDescription:
             path="/configuration/instrument/subarray/layout",
             serialize_meta=serialize_meta,
             append=True,
+            overwrite=overwrite,
         )
         self.to_table(kind="optics").write(
             output_path,
             path="/configuration/instrument/telescope/optics",
             append=True,
             serialize_meta=serialize_meta,
+            overwrite=overwrite,
         )
         for i, camera in enumerate(self.camera_types):
             camera.geometry.to_table().write(
@@ -399,12 +404,14 @@ class SubarrayDescription:
                 path=f"/configuration/instrument/telescope/camera/geometry_{i}",
                 append=True,
                 serialize_meta=serialize_meta,
+                overwrite=overwrite,
             )
             camera.readout.to_table().write(
                 output_path,
                 path=f"/configuration/instrument/telescope/camera/readout_{i}",
                 append=True,
                 serialize_meta=serialize_meta,
+                overwrite=overwrite,
             )
 
         with tables.open_file(output_path, mode="r+") as f:
@@ -466,12 +473,23 @@ class SubarrayDescription:
             for row in optics_table
         ]
 
+        # give correct frame for the camera to each telescope
+        cameras_by_desc = {}
+        for row in layout:
+            desc = row["tel_description"]
+
+            # copy to support different telescopes with same camera geom
+            camera = copy(cameras[row["camera_type"]])
+            focal_length = optics[desc].equivalent_focal_length
+            camera.geometry.frame = CameraFrame(focal_length=focal_length)
+            cameras_by_desc[desc] = camera
+
         telescope_descriptions = {
             row["tel_id"]: TelescopeDescription(
                 name=row["name"],
                 tel_type=row["type"],
-                optics=optics[row["optics_index"]],
-                camera=cameras[row["camera_index"]],
+                optics=optics[row["tel_description"]],
+                camera=cameras_by_desc[row["tel_description"]],
             )
             for row in layout
         }
@@ -479,7 +497,11 @@ class SubarrayDescription:
         positions = np.column_stack([layout[f"pos_{c}"] for c in "xyz"])
 
         with tables.open_file(path, mode="r") as f:
-            name = f.root.configuration.instrument.subarray._v_attrs.name
+            attrs = f.root.configuration.instrument.subarray._v_attrs
+            if "name" in attrs:
+                name = str(attrs.name)
+            else:
+                name = "Unknown"
 
         return cls(
             name=name,

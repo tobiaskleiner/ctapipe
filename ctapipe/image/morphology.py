@@ -166,10 +166,10 @@ def brightest_island(n_islands, island_labels, image):
 
     # calculate the sum of image for each island via numpy ufunc magic
     # basically, each pixel is added to `island_brightness` at its island_label
+    # +1 because 0 means "no island" and we have up to "n_islands" values.
     island_brightness = np.zeros(n_islands + 1)
     np.add.at(island_brightness, island_labels[mask], image[mask])
 
-    # +1 because we discard the 0 "no island" marker above
     brightest_island = np.argmax(island_brightness)
 
     return island_labels == brightest_island

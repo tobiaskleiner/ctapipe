@@ -1,0 +1,7 @@
+<map id="inheritance35f24f5440" name="inheritance35f24f5440">
+<area shape="rect" id="node1" title="Base class of all Components." alt="" coords="378,25,459,46"/>
+<area shape="rect" id="node6" title="This is the base class from which all direction reconstruction" alt="" coords="499,25,590,46"/>
+<area shape="rect" id="node4" title="The base class for all classes that have descriptors." alt="" coords="4,25,105,46"/>
+<area shape="rect" id="node5" title="class that reconstructs the direction of an atmospheric shower" alt="" coords="636,4,758,25"/>
+<area shape="rect" id="node7" title="This class is an implementation if the impact_reco Monte Carlo" alt="" coords="630,45,764,66"/>
+</map>

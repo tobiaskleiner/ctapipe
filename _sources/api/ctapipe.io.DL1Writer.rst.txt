@@ -1,0 +1,63 @@
+DL1Writer
+=========
+
+.. currentmodule:: ctapipe.io
+
+.. autoclass:: DL1Writer
+   :show-inheritance:
+
+   .. rubric:: Attributes Summary
+
+   .. autosummary::
+
+      ~DL1Writer.compression_level
+      ~DL1Writer.compression_type
+      ~DL1Writer.image_dtype
+      ~DL1Writer.image_offset
+      ~DL1Writer.image_scale
+      ~DL1Writer.output_path
+      ~DL1Writer.overwrite
+      ~DL1Writer.peak_time_dtype
+      ~DL1Writer.peak_time_offset
+      ~DL1Writer.peak_time_scale
+      ~DL1Writer.split_datasets_by
+      ~DL1Writer.transform_image
+      ~DL1Writer.transform_peak_time
+      ~DL1Writer.write_images
+      ~DL1Writer.write_index_tables
+      ~DL1Writer.write_parameters
+
+   .. rubric:: Methods Summary
+
+   .. autosummary::
+
+      ~DL1Writer.__call__
+      ~DL1Writer.finish
+      ~DL1Writer.setup
+      ~DL1Writer.write_simulation_histograms
+
+   .. rubric:: Attributes Documentation
+
+   .. autoattribute:: compression_level
+   .. autoattribute:: compression_type
+   .. autoattribute:: image_dtype
+   .. autoattribute:: image_offset
+   .. autoattribute:: image_scale
+   .. autoattribute:: output_path
+   .. autoattribute:: overwrite
+   .. autoattribute:: peak_time_dtype
+   .. autoattribute:: peak_time_offset
+   .. autoattribute:: peak_time_scale
+   .. autoattribute:: split_datasets_by
+   .. autoattribute:: transform_image
+   .. autoattribute:: transform_peak_time
+   .. autoattribute:: write_images
+   .. autoattribute:: write_index_tables
+   .. autoattribute:: write_parameters
+
+   .. rubric:: Methods Documentation
+
+   .. automethod:: __call__
+   .. automethod:: finish
+   .. automethod:: setup
+   .. automethod:: write_simulation_histograms
